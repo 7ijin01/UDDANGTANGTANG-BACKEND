@@ -13,4 +13,4 @@ spring:
 openai:
   api:
     url:
-    serviceKey: ${KAKAO_CLIENT_ID}
+    serviceKey: ${GPT_SERVICE_KEY}
