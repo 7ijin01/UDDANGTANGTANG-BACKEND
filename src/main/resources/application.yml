@@ -1,1 +1,16 @@
-spring.application.name=uddangtangtang
+spring:
+  datasource:
+    url:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username:
+    password:
+
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+openai:
+  api:
+    url:
+    serviceKey: ${KAKAO_CLIENT_ID}
