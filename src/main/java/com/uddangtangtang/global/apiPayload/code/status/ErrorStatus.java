@@ -15,6 +15,12 @@ public enum ErrorStatus implements BaseErrorCode {
     _UNAUTHORIZED          (HttpStatus.UNAUTHORIZED,        "COMMON401", "인증이 필요합니다."),
     _FORBIDDEN             (HttpStatus.FORBIDDEN,           "COMMON403", "금지된 요청입니다."),
 
+    /* ===== AI 응답 ===== */
+    AI_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI_001", "AI에게 잘못된 응답을 받았습니다."),
+
+
+    /* ===== 유형 테스트 ===== */
+    CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVEL_TYPE_001", "해당 코드의 여행 유형을 찾을 수 없습니다."),
 
     /* ===== 검증/리소스 ===== */
     VALIDATION_ERROR ("COMMON400A", "유효성 검증 실패"),
