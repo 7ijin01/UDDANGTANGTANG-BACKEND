@@ -21,5 +21,5 @@ public class TravelType
     private String type_name;// 해당 유형 이름
     private String type_description;//해당 유형 설명
     private String image;//해당 유형 캐릭터 저장
-    private String trip_recommand;
+    private String trip_recommand;// 여행지 추천임다
 }
