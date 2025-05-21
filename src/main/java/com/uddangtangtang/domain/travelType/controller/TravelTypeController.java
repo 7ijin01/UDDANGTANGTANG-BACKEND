@@ -1,5 +1,6 @@
 package com.uddangtangtang.domain.travelType.controller;
 
+import com.uddangtangtang.docs.TravelTypeControllerDocs;
 import com.uddangtangtang.domain.travelType.dto.request.TypeRequest;
 import com.uddangtangtang.domain.travelType.dto.response.TypeResponse;
 import com.uddangtangtang.domain.travelType.service.TravelTypeService;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/ai/type")
-public class TravelTypeController
+public class TravelTypeController implements TravelTypeControllerDocs
 {
     private final TravelTypeService travelTypeService;
 
