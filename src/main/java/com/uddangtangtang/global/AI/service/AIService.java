@@ -25,7 +25,8 @@ public class AIService
 
     public Mono<String> askChatGPT(String prompt) {
         Map<String, Object> requestBody = Map.of(
-                "model", "gpt-4.1-nano", // 4.1-nano가 저렴함
+                "model", "gpt-4o-mini", // 4.1-nano가 저렴함
+                "temperature", 0.0,
                 "messages", List.of(
                         Map.of("role", "user", "content", prompt)
                 )
