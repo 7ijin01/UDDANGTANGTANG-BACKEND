@@ -28,10 +28,9 @@ public class TravelTypeService
         String prompt=AiTypePromptBuilder.buildPromptFromRequest(request);
         String aiRawResponse = aiService.askChatGPT(prompt).block();
         log.info(aiRawResponse);
-
         String code = "";
         String reason = "";
-        String key_word = "";
+        String keyword = "";
         String image = "";
         String description = "";
         String name = "";
@@ -39,20 +38,20 @@ public class TravelTypeService
         //에러 났을 경우 하드 코딩
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
-
             code = jsonNode.path("code").asText();
             reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            key_word = jsonNode.has("keyWord") ? jsonNode.get("key_word").asText() : "";
+            keyword = jsonNode.has("keyword") ? jsonNode.get("keyword").asText() : "";
 
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
-                    .orElseThrow(()->new GeneralException(ErrorStatus.CODE_NOT_FOUND));
+                    .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
             image=travelType.getImage();
             description=travelType.getType_description();
             name=travelType.getType_name();
             recommand=travelType.getType_name();
-            return new TypeResponse(code,
+            return new TypeResponse(
+                    code,
                     reason,
-                    key_word,
+                    keyword,
                     travelType.getImage(),
                     travelType.getType_description(),
                     travelType.getType_name(),
@@ -61,7 +60,7 @@ public class TravelTypeService
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,key_word,image,description,name,recommand);
+            return new TypeResponse(code,reason,keyword,image,description,name,recommand);
         }
 
 

@@ -5,7 +5,7 @@ import lombok.Getter;
 public record TypeResponse(
         String code,
         String reason,
-        String keyWord,
+        String keyword,
         String image,
         String description,
         String type_name,
