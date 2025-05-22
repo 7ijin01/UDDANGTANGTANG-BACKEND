@@ -1,9 +1,6 @@
 package com.uddangtangtang.domain.travelType.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +13,8 @@ public class TravelType
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int type_id;
+    @Column(name = "type_id")
+    private Long id;
     private String code;//해당 유형 코드 ex)A-A-A-B
     private String type_name;// 해당 유형 이름
     private String type_description;//해당 유형 설명
