@@ -112,7 +112,7 @@ public class AiTypePromptBuilder {
         {
          "code": "A-A-B",
          "reason": "당신은 전체적으로 자유롭고 즉흥적인 여행을 선호하는 성향이에요. 현지에서 흐름에 따라 움직이는 걸 더 편하게 느끼는 편이죠.",
-         "key_word": "#집순이 #커피 한 잔의 여유"
+         "keyword": "#집순이 #커피 한 잔의 여유"
         }
         reason은 최소 100자 이상으로 해줘
         """.formatted(
