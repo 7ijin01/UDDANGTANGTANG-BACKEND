@@ -92,7 +92,7 @@ public class AiTypePromptBuilder {
             "type": "유형 번호 (1~8)",
             "code": "A-A-A-B" <- 해당 유형 코드
             "reason": "분석 설명 자세히"
-            "keyWord: "여행 스타일 키워드 #집순이 이런식으로"
+            "keyWord: "#집순이 #커피 한 잔의 여유" <- 이런식으로
         }
         """.formatted(
                 request.planAnswer(),
