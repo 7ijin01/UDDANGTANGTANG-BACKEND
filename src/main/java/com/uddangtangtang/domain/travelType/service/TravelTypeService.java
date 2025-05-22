@@ -27,16 +27,29 @@ public class TravelTypeService
     {
         String prompt=AiTypePromptBuilder.buildPromptFromRequest(request);
         String aiRawResponse = aiService.askChatGPT(prompt).block();
+        log.info(aiRawResponse);
+
+        String code = "";
+        String reason = "";
+        String keyWord = "";
+        String image = "";
+        String description = "";
+        String name = "";
+        String recommand = "";
+        //에러 났을 경우 하드 코딩
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
 
-            String code = jsonNode.path("code").asText();
-            String reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            String keyWord = jsonNode.has("keyWord") ? jsonNode.get("keyWord").asText() : "";
+            code = jsonNode.path("code").asText();
+            reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
+            keyWord = jsonNode.has("keyWord") ? jsonNode.get("keyWord").asText() : "";
 
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                     .orElseThrow(()->new GeneralException(ErrorStatus.CODE_NOT_FOUND));
-
+            image=travelType.getImage();
+            description=travelType.getType_description();
+            name=travelType.getType_name();
+            recommand=travelType.getType_name();
             return new TypeResponse(code,
                     reason,
                     keyWord,
@@ -46,7 +59,9 @@ public class TravelTypeService
                     travelType.getTrip_recommand());
         } catch (Exception e) {
             log.error("AI 응답 파싱 실패", e);
-            throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
+// \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
+
+            return new TypeResponse(code,reason,keyWord,image,description,name,recommand);
         }
 
 
