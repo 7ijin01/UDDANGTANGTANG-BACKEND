@@ -31,7 +31,7 @@ public class TravelTypeService
 
         String code = "";
         String reason = "";
-        String keyWord = "";
+        String key_word = "";
         String image = "";
         String description = "";
         String name = "";
@@ -42,7 +42,7 @@ public class TravelTypeService
 
             code = jsonNode.path("code").asText();
             reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            keyWord = jsonNode.has("keyWord") ? jsonNode.get("keyWord").asText() : "";
+            key_word = jsonNode.has("keyWord") ? jsonNode.get("key_word").asText() : "";
 
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                     .orElseThrow(()->new GeneralException(ErrorStatus.CODE_NOT_FOUND));
@@ -52,7 +52,7 @@ public class TravelTypeService
             recommand=travelType.getType_name();
             return new TypeResponse(code,
                     reason,
-                    keyWord,
+                    key_word,
                     travelType.getImage(),
                     travelType.getType_description(),
                     travelType.getType_name(),
@@ -61,7 +61,7 @@ public class TravelTypeService
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,keyWord,image,description,name,recommand);
+            return new TypeResponse(code,reason,key_word,image,description,name,recommand);
         }
 
 
