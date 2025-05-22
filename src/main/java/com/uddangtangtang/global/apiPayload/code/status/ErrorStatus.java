@@ -20,7 +20,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     /* ===== 유형 테스트 ===== */
-    CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVEL_TYPE_001", "해당 코드의 여행 유형을 찾을 수 없습니다."),
+    TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVEL_TYPE_001", "해당 여행 유형을 찾을 수 없습니다."),
 
     /* ===== 검증/리소스 ===== */
     VALIDATION_ERROR ("COMMON400A", "유효성 검증 실패"),
