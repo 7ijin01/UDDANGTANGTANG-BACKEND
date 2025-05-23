@@ -1,6 +1,8 @@
-package com.uddangtangtang.global.AI.service;
+package com.uddangtangtang.global.ai.service;
 
-import com.uddangtangtang.global.AI.dto.response.ChatGptResponse;
+
+
+import com.uddangtangtang.global.ai.dto.response.ChatGptResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +18,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AIService
+public class AiService
 {
     @Value("${openai.api.serviceKey}")
     private String apiKey;
@@ -25,7 +27,8 @@ public class AIService
 
     public Mono<String> askChatGPT(String prompt) {
         Map<String, Object> requestBody = Map.of(
-                "model", "gpt-4.1-nano", // 4.1-nano가 저렴함
+                "model", "gpt-4o-mini", // 4.1-nano가 저렴함
+                "temperature", 0.0,
                 "messages", List.of(
                         Map.of("role", "user", "content", prompt)
                 )
