@@ -1,6 +1,5 @@
-package com.uddangtangtang.domain.travelType.dto.response;
+package com.uddangtangtang.domain.traveltype.dto.response;
 
-import lombok.Getter;
 
 public record TypeResponse(
         String code,

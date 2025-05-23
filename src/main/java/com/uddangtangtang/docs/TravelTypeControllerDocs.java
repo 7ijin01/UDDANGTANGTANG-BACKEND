@@ -1,8 +1,9 @@
 package com.uddangtangtang.docs;
 
 
-import com.uddangtangtang.domain.travelType.dto.request.TypeRequest;
-import com.uddangtangtang.domain.travelType.dto.response.TypeResponse;
+import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
+
+import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface TravelTypeControllerDocs
 {
     @Operation(summary = "여행 유형 테스트", description = "12가지 질문에 대한 답을 RequestBody로 넣음\n" +
-            "4가지 축에 대한 답을 넘겨주면 됨 ex) A-B-B")
+            "4가지 축에 대한 답을 넘겨주면 됨 ex) planAnswer : A-B-B")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "수정된 문서 반환 성공"),
             @ApiResponse(responseCode = "500", description = "서버 에러",

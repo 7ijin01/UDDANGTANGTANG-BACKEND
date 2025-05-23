@@ -1,6 +1,6 @@
 package com.uddangtangtang.global.util;
 
-import com.uddangtangtang.domain.travelType.dto.request.TypeRequest;
+import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 public class AiTypePromptBuilder {
     public static String buildPromptFromRequest(TypeRequest request) {
         return """
@@ -91,7 +91,7 @@ public class AiTypePromptBuilder {
                    단, A와 B 개수가 동일한 경우에는 해당 영역의 우선순위 문항 선택지를 기준으로 A 또는 B를 결정하라. 
                    이 과정을 통해 도출된 각 영역별 결과(P/E/C)는 반드시 최종 code에 정확히 반영되어야 한다. 
                    예: 계획성 = B, 에너지 = A, 소비 성향 = A → code는 "B-A-A"
-                
+                   무조건 유형리스트에 있는 코드를 반환해야한다.
                 3. code가 유형 리스트에 정확히 일치하는 항목이 있다면 해당 번호(type)를 반환하라.
                 
                 4. 정확히 일치하는 항목이 없다면, 한 글자만 다른 가장 유사한 code를 기준으로 유형을 선택하라.
@@ -101,7 +101,7 @@ public class AiTypePromptBuilder {
                 6. 절대로 추측하거나 임의로 판단하지 말고, 오직 A/B 개수 및 우선순위 문항에 따라 결정된 값만 사용하라.
                 
                 7. 최종 출력되는 "code" 값은 위에서 판단한 계획성/에너지/소비 성향 결과와 **정확히 동일해야 하며**, 
-                   "reason"에는 각 영역의 A/B 개수, 우선 문항 선택지, 그리고 최종 결정된 code 계산 근거를 반드시 명확히 서술하라.
+                   "reason"에는 사용자의 입장에서 A,B로 판단하지말고 질문에 답한 내용대로 왜 그렇게 분류했는지 설명해라
                 
                 8. 조금이라도 규칙을 어기거나, code와 reason 사이에 불일치가 있으면 실패로 간주되니 절대 틀리지 마라.
                 

@@ -1,6 +1,5 @@
-package com.uddangtangtang.domain.travelType.dto.request;
+package com.uddangtangtang.domain.traveltype.dto.request;
 
-import lombok.Getter;
 
 public record TypeRequest(
         String planAnswer,

@@ -1,7 +1,7 @@
-package com.uddangtangtang.domain.travelType.repository;
+package com.uddangtangtang.domain.traveltype.repository;
 
-import com.uddangtangtang.domain.travelType.domain.TravelType;
-import com.uddangtangtang.domain.travelType.repository.custom.CustomTravelTypeRepository;
+import com.uddangtangtang.domain.traveltype.domain.TravelType;
+import com.uddangtangtang.domain.traveltype.repository.custom.CustomTravelTypeRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface TravelTypeRepository extends JpaRepository<TravelType, Long>, CustomTravelTypeRepository
 {
     Optional<TravelType> findTravelTypeByCode(String code);
+    Optional<TravelType> findTravelTypeById(Long type_id);
 }

@@ -1,4 +1,4 @@
-package com.uddangtangtang.global.AI.dto.response;
+package com.uddangtangtang.global.ai.dto.response;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.uddangtangtang.domain.travelType.domain;
+package com.uddangtangtang.domain.traveltype.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,8 +16,15 @@ public class TravelType
     @Column(name = "type_id")
     private Long id;
     private String code;//해당 유형 코드 ex)A-A-A-B
-    private String type_name;// 해당 유형 이름
-    private String type_description;//해당 유형 설명
+
+    @Column(name = "type_name")
+    private String typeName;// 해당 유형 이름
+
+    @Column(name = "type_description")
+    private String typeDescription;//해당 유형 설명
+
     private String image;//해당 유형 캐릭터 저장
-    private String trip_recommand;// 여행지 추천임다
+
+    @Column(name = "trip_recommand")
+    private String tripRecommand;// 여행지 추천임다
 }
