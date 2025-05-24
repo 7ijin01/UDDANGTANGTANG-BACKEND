@@ -7,8 +7,8 @@ public record TypeResponse(
         String keyword,
         String image,
         String description,
-        String type_name,
-        String trip_recommand
+        String typeName,
+        String tripRecommand
 
 ) {
 
