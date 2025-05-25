@@ -1,69 +1,41 @@
 name: CI/CD Pipeline
-
 on:
   push:
-    branches: [ develop ]  # develop 브랜치에 push가 일어날 때 실행
+    branches: [develop]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3  # 저장소 코드 체크아웃
+      - uses: actions/checkout@v3
 
-      - name: Set up JDK 17  # Java 개발 킷 설정
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
+          cache: gradle          # 🟢 1
 
-      - name: Make application.yml  # application.yml 파일 생성
+      - name: Make application.yml
         run: |
-          # resources 폴더가 없으면 생성
           mkdir -p src/main/resources
-          
-          # 시크릿을 application.yml 로 주입 (멀티라인 안전하게 printf 사용)
           printf '%s\n' "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
-        shell: bash
 
-      - name: Grant execute permission for gradlew  # gradlew 실행 권한 부여
-        run: chmod +x gradlew
-
-      - name: Build with Gradle  # Gradle을 사용하여 프로젝트 빌드
+      - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: build --no-daemon   # 3-step 캐시가 활성화되면 더 빨라짐
 
-      - name: Upload build artifact  # 빌드된 아티팩트 업로드
-        uses: actions/upload-artifact@v4
-        with:
-          name: uddangtangtang-server
-          path: build/libs/*.jar
-
-  deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download build artifact  # 이전 단계에서 업로드한 아티팩트 다운로드
-        uses: actions/download-artifact@v4
-        with:
-          name: uddangtangtang-server
-          path: build/libs/
-
-      - name: Deploy to EC2  # EC2에 배포
+      - name: Deploy to EC2
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          echo "$EC2_SSH_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/uddangtangtang-server.jar
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
-            sleep 10
-            nohup java -jar /home/$EC2_USERNAME/uddangtangtang-server.jar > app.log 2>&1 &  # 새 버전 애플리케이션 실행
-          "
-          rm -f private_key.pem  # 민감한 정보 삭제
+          echo "$EC2_SSH_KEY" > key.pem && chmod 600 key.pem
+          jar_file=$(find build/libs -name '*SNAPSHOT.jar' ! -name '*plain.jar' | head -n1)
+          scp -i key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/uddangtangtang-server.jar
+          ssh -i key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST \
+            "pkill -f 'uddangtangtang-server.jar' || true && \
+             nohup java -jar /home/$EC2_USERNAME/uddangtangtang-server.jar > app.log 2>&1 &"
+          rm -f key.pem
