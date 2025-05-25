@@ -6,7 +6,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
@@ -14,17 +13,23 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle          # 🟢 1
+          cache: gradle
+
+      # ❶ gradlew 에 실행권한 부여 (다시 추가!)
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
 
       - name: Make application.yml
         run: |
           mkdir -p src/main/resources
           printf '%s\n' "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
 
+      # ❷ (선택) 캐시 키 프리픽스를 짧게 지정해 422 경고 제거
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build --no-daemon   # 3-step 캐시가 활성화되면 더 빨라짐
+          arguments: build --no-daemon
+          cache-key-prefix: gradle  # ← 경고 방지용
 
       - name: Deploy to EC2
         env:
