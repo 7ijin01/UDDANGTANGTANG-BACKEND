@@ -19,6 +19,12 @@ public class AmazonConfig {
 
     private AWSCredentials awsCredentials;
 
+    @Value("${cloud.aws.s3.path.review}")
+    private String reviewPath;
+
+    @Value(("${cloud.aws.s3.bucket}"))
+    private String bucket;
+
     @Value("${cloud.aws.credentials.accessKey}")
     private String accessKey;
 
