@@ -31,17 +31,16 @@ public class TravelTypeService
         log.info(aiRawResponse);
         String code = "";
         String reason = "";
-        String keyword = "";
         String image = "";
         String description = "";
         String name = "";
         String recommand = "";
         //에러 났을 경우 하드 코딩
+        
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
             code = jsonNode.path("code").asText();
             reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            keyword = jsonNode.has("keyword") ? jsonNode.get("keyword").asText() : "";
 
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                     .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
@@ -52,7 +51,6 @@ public class TravelTypeService
             return new TypeResponse(
                     code,
                     reason,
-                    keyword,
                     travelType.getImage(),
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
@@ -61,7 +59,7 @@ public class TravelTypeService
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,keyword,image,description,name,recommand);
+            return new TypeResponse(code,reason,image,description,name,recommand);
         }
 
 
