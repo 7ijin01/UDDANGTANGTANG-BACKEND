@@ -4,9 +4,11 @@ package com.uddangtangtang.domain.traveltype.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
+import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
+import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestLogRepository;
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class TravelTypeService
 {
     private final TravelTypeRepository travelTypeRepository;
+    private final TravelTypeTestLogRepository travelTypeTestLogRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
 
@@ -48,6 +51,9 @@ public class TravelTypeService
             description=travelType.getTypeDescription();
             name=travelType.getTypeName();
             recommand=travelType.getTripRecommand();
+
+            travelTypeTestLogRepository.save(new TravelTypeTestLog());
+
             return new TypeResponse(
                     code,
                     reason,
@@ -63,6 +69,10 @@ public class TravelTypeService
         }
 
 
+    }
+    public Long getTestCount()
+    {
+        return travelTypeTestLogRepository.count();
     }
 
 }
