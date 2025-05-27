@@ -9,10 +9,7 @@ import com.uddangtangtang.global.apiPayload.ApiResponse;
 import com.uddangtangtang.global.apiPayload.code.status.SuccessStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,5 +21,11 @@ public class TravelTypeController implements TravelTypeControllerDocs
     @PostMapping("/test")
     public ResponseEntity<ApiResponse<TypeResponse>> requestTravelTypeTest(@RequestBody TypeRequest typeRequest) {
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,travelTypeService.generateTravelType(typeRequest)));
+    }
+
+    @GetMapping("/test-count")
+    public ResponseEntity<ApiResponse<Long>> getTestCount() {
+        long count = travelTypeService.getTestCount();
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, count));
     }
 }

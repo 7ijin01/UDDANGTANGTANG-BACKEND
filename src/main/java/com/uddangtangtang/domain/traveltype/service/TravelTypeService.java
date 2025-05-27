@@ -4,9 +4,11 @@ package com.uddangtangtang.domain.traveltype.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
+import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
+import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestLogRepository;
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class TravelTypeService
 {
     private final TravelTypeRepository travelTypeRepository;
+    private final TravelTypeTestLogRepository travelTypeTestLogRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
 
@@ -31,17 +34,16 @@ public class TravelTypeService
         log.info(aiRawResponse);
         String code = "";
         String reason = "";
-        String keyword = "";
         String image = "";
         String description = "";
         String name = "";
         String recommand = "";
         //에러 났을 경우 하드 코딩
+        
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
             code = jsonNode.path("code").asText();
             reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            keyword = jsonNode.has("keyword") ? jsonNode.get("keyword").asText() : "";
 
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                     .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
@@ -49,10 +51,12 @@ public class TravelTypeService
             description=travelType.getTypeDescription();
             name=travelType.getTypeName();
             recommand=travelType.getTripRecommand();
+
+            travelTypeTestLogRepository.save(new TravelTypeTestLog());
+
             return new TypeResponse(
                     code,
                     reason,
-                    keyword,
                     travelType.getImage(),
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
@@ -61,10 +65,14 @@ public class TravelTypeService
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,keyword,image,description,name,recommand);
+            return new TypeResponse(code,reason,image,description,name,recommand);
         }
 
 
+    }
+    public Long getTestCount()
+    {
+        return travelTypeTestLogRepository.count();
     }
 
 }
