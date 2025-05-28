@@ -1,5 +1,6 @@
 package com.uddangtangtang.domain.compatibility.controller;
 
+import com.uddangtangtang.docs.TravelCompatibilityControllerDocs;
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
 import com.uddangtangtang.domain.compatibility.service.TravelCompatibilityService;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/ai/type")
-public class TravelCompatibilityController {
+public class TravelCompatibilityController implements TravelCompatibilityControllerDocs {
     private final TravelCompatibilityService compatibilityService;
 
     @PostMapping("/compatibility")
