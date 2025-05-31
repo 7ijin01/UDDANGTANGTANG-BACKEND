@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
+import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestLogRepository;
+import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestResultRepository;
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
@@ -17,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +29,7 @@ public class TravelTypeService
 {
     private final TravelTypeRepository travelTypeRepository;
     private final TravelTypeTestLogRepository travelTypeTestLogRepository;
+    private final TravelTypeTestResultRepository travelTypeTestResultRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
 
@@ -39,7 +45,7 @@ public class TravelTypeService
         String name = "";
         String recommand = "";
         //에러 났을 경우 하드 코딩
-        
+        String uuid = UUID.randomUUID().toString();
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
             code = jsonNode.path("code").asText();
@@ -52,7 +58,11 @@ public class TravelTypeService
             name=travelType.getTypeName();
             recommand=travelType.getTripRecommand();
 
+
+
             travelTypeTestLogRepository.save(new TravelTypeTestLog());
+            TravelTypeTestResult result = new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now());
+            travelTypeTestResultRepository.save(result);
 
             return new TypeResponse(
                     code,
@@ -60,12 +70,13 @@ public class TravelTypeService
                     travelType.getImage(),
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
-                    travelType.getTripRecommand());
+                    travelType.getTripRecommand(),
+                    uuid);
         } catch (Exception e) {
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,image,description,name,recommand);
+            return new TypeResponse(code,reason,image,description,name,recommand,uuid);
         }
 
 
@@ -73,6 +84,23 @@ public class TravelTypeService
     public Long getTestCount()
     {
         return travelTypeTestLogRepository.count();
+    }
+
+    public TypeResponse getShareResult(String uuid)
+    {
+        TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
+        TravelType travelType = travelTypeTestResult.getTravelType();
+
+        return new TypeResponse(
+                travelType.getCode(),
+                travelTypeTestResult.getReason(),
+                travelType.getImage(),
+                travelType.getTypeDescription(),
+                travelType.getTypeName(),
+                travelType.getTripRecommand(),
+                travelTypeTestResult.getId()
+        );
     }
 
 }

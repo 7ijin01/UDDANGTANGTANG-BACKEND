@@ -28,4 +28,10 @@ public class TravelTypeController implements TravelTypeControllerDocs
         long count = travelTypeService.getTestCount();
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, count));
     }
+
+    @GetMapping("/share/{id}")
+    public ResponseEntity<ApiResponse<TypeResponse>> requestTravelTypeTest(@PathVariable String id)
+    {
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,travelTypeService.getShareResult(id)));
+    }
 }
