@@ -63,7 +63,7 @@ public interface TravelTypeControllerDocs
     ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<Long>> getTestCount();
 
 
-    @Operation(summary = "여행 유형 테스트 공유 링크")
+    @Operation(summary = "여행 유형 테스트 공유 링크", description = "여행 유형테스트 응답 바디에 나오는 shareId를 매개로 넣어주면 됨")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "공유 url 반환 성공"),
             @ApiResponse(responseCode = "500", description = "서버 에러",
