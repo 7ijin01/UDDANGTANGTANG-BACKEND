@@ -23,7 +23,10 @@ public class TravelType
     @Column(name = "type_description")
     private String typeDescription;//해당 유형 설명
 
-    private String image;//해당 유형 캐릭터 저장
+    @Lob
+    @Column(name = "image", columnDefinition = "LONGBLOB")
+    private byte[] image;
+
 
     @Column(name = "trip_recommand")
     private String tripRecommand;// 여행지 추천임다

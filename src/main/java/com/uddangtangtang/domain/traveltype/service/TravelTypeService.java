@@ -18,8 +18,11 @@ import com.uddangtangtang.global.util.AiTypePromptBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -50,13 +53,13 @@ public class TravelTypeService
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
             code = jsonNode.path("code").asText();
             reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-
             TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                     .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
-            image=travelType.getImage();
             description=travelType.getTypeDescription();
             name=travelType.getTypeName();
             recommand=travelType.getTripRecommand();
+            image=Base64.getEncoder().encodeToString(travelType.getImage());
+
 
 
 
@@ -67,7 +70,7 @@ public class TravelTypeService
             return new TypeResponse(
                     code,
                     reason,
-                    travelType.getImage(),
+                    image,
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
                     travelType.getTripRecommand(),
@@ -91,16 +94,33 @@ public class TravelTypeService
         TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
         TravelType travelType = travelTypeTestResult.getTravelType();
-
+        String image=Base64.getEncoder().encodeToString(travelType.getImage());
         return new TypeResponse(
                 travelType.getCode(),
                 travelTypeTestResult.getReason(),
-                travelType.getImage(),
+                image,
                 travelType.getTypeDescription(),
                 travelType.getTypeName(),
                 travelType.getTripRecommand(),
                 travelTypeTestResult.getId()
         );
+    }
+    public TravelType uploadImage(MultipartFile file, Long id)
+    {
+        TravelType travelType= travelTypeRepository.findTravelTypeById(id)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+        try {
+            byte[] imageBytes = file.getBytes();
+            travelType.setImage(imageBytes);
+            travelTypeRepository.save(travelType);
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 저장 중 오류 발생", e);
+        }
+
+        travelTypeRepository.save(travelType);
+
+       return travelType;
+
     }
 
 }
