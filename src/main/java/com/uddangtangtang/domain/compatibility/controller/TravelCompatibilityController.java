@@ -4,14 +4,12 @@ import com.uddangtangtang.docs.TravelCompatibilityControllerDocs;
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
 import com.uddangtangtang.domain.compatibility.service.TravelCompatibilityService;
+import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.global.apiPayload.ApiResponse;
 import com.uddangtangtang.global.apiPayload.code.status.SuccessStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,5 +24,10 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
                 ApiResponse.onSuccess(SuccessStatus._OK,
                         compatibilityService.computeCompatibility(request))
         );
+    }
+    @GetMapping("/compatibility/share/{id}")
+    public ResponseEntity<ApiResponse<CompatibilityResponse>> requestCompatibilityTest(@PathVariable String id)
+    {
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,compatibilityService.getShareResult(id)));
     }
 }
