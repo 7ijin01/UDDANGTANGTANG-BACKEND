@@ -3,6 +3,7 @@ package com.uddangtangtang.domain.traveltype.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
@@ -58,7 +59,7 @@ public class TravelTypeService
             description=travelType.getTypeDescription();
             name=travelType.getTypeName();
             recommand=travelType.getTripRecommand();
-            image=Base64.getEncoder().encodeToString(travelType.getImage());
+            image=travelType.getImage();
 
 
 
@@ -94,33 +95,17 @@ public class TravelTypeService
         TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
         TravelType travelType = travelTypeTestResult.getTravelType();
-        String image=Base64.getEncoder().encodeToString(travelType.getImage());
         return new TypeResponse(
                 travelType.getCode(),
                 travelTypeTestResult.getReason(),
-                image,
+                travelType.getImage(),
                 travelType.getTypeDescription(),
                 travelType.getTypeName(),
                 travelType.getTripRecommand(),
                 travelTypeTestResult.getId()
         );
     }
-    public TravelType uploadImage(MultipartFile file, Long id)
-    {
-        TravelType travelType= travelTypeRepository.findTravelTypeById(id)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
-        try {
-            byte[] imageBytes = file.getBytes();
-            travelType.setImage(imageBytes);
-            travelTypeRepository.save(travelType);
-        } catch (IOException e) {
-            throw new RuntimeException("이미지 저장 중 오류 발생", e);
-        }
 
-        travelTypeRepository.save(travelType);
 
-       return travelType;
-
-    }
 
 }
