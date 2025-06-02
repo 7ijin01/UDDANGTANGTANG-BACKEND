@@ -39,10 +39,10 @@ public class TravelTypeController implements TravelTypeControllerDocs
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,travelTypeService.getShareResult(id)));
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<TravelType>> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam Long id) throws IOException
-    {
-        TravelType response = travelTypeService.uploadImage(file, id);
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,response));
-    }
+//    @PostMapping("/upload")
+//    public ResponseEntity<ApiResponse<TravelType>> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam Long id) throws IOException
+//    {
+//        TravelType response = travelTypeService.uploadImage(file, id);
+//        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,response));
+//    }
 }
