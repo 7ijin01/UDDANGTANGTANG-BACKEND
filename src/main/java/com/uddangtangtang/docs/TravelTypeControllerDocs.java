@@ -1,6 +1,7 @@
 package com.uddangtangtang.docs;
 
 
+import com.uddangtangtang.domain.traveltype.domain.TravelType;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
@@ -13,6 +14,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Tag(name = "여행 유형 테스트 API")
 public interface TravelTypeControllerDocs
@@ -84,4 +89,27 @@ public interface TravelTypeControllerDocs
             )
     })
     ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<TypeResponse>> requestTravelTypeTest(@PathVariable String id);
+
+//    @Operation(summary = "사진 업로드", description = "사진 업로드")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "사진 업로드 성공"),
+//            @ApiResponse(responseCode = "500", description = "서버 에러",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(
+//                                    name = "서버 에러 응답",
+//                                    summary = "예상치 못한 서버 에러",
+//                                    value = """
+//                {
+//                  "success": false,
+//                  "code": "COMMON_500",
+//                  "message": "서버 에러, 관리자에게 문의 바랍니다."
+//                }
+//                """
+//                            )
+//                    )
+//            )
+//    })
+//    ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<TravelType>> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam Long id) throws IOException;
 }
+

@@ -6,5 +6,6 @@ public record CompatibilityResponse(
         String result,
         String tips,
         String conflictPoints,
-        List<String> recommendations
+        List<String> recommendations,
+        String shareId
 ) {}
