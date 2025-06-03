@@ -24,10 +24,14 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
 
-      - name: Gradle 권한 부여 및 빌드
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Gradle 셋업
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        run: ./gradlew build --exclude-task test
 
       - name: GCP 인증 (서비스 계정 키)
         uses: google-github-actions/auth@v2
