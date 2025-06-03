@@ -3,7 +3,7 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - deploy
+      - feat/30
 
 jobs:
   deploy:
