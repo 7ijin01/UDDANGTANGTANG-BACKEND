@@ -9,5 +9,6 @@ public class WebForwardingController {
     @RequestMapping(value = {"/{path:[^\\.]*}", "/**/{path:[^\\.]*}"})
     public String forwardToIndex() {
         return "forward:/index.html";
+
     }
 }
