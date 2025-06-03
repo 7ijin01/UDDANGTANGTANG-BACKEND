@@ -31,7 +31,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000", "https://localhost:63342","http://localhost:19006",
-                "https://uddangtangtang-crew.com", "https://www.uddangtangtang-crew.com",  "https://api.uddangtangtang-crew.com" ));
+                "https://uddangtangtang-crew.com", "https://www.uddangtangtang-crew.com",  "https://api.uddangtangtang-crew.com",
+                "https://uddangtangtang-app.vercel.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
