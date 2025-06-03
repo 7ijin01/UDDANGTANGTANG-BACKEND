@@ -44,13 +44,13 @@ jobs:
 
       - name: Docker 이미지 빌드 및 푸시
         run: |
-          docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
-          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
+          docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/opendata:latest .
+          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/opendata:latest
 
       - name: Cloud Run 배포
         run: |
           gcloud run deploy spring-app \
-            --image asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest \
+            --image asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/opendata:latest \
             --platform managed \
             --region asia-northeast3 \
             --allow-unauthenticated \
