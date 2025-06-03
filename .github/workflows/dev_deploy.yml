@@ -40,20 +40,20 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Docker를 위한 gcloud 인증 설정
-        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Docker 이미지 생성 및 태그 설정
-        run: docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
+        run: docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
 
       - name: Docker 이미지 푸시
-        run: docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
+        run: docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
 
       - name: Cloud Run 배포
         run: |
           gcloud run deploy spring-app \
-            --image asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest \
+            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest \
             --platform managed \
-            --region asia-northeast3 \
+            --region us-central1 \
             --allow-unauthenticated \
             --quiet
           
