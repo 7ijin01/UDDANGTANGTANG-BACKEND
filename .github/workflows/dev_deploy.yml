@@ -1,70 +1,55 @@
-name: CI/CD Pipeline
+name: Deploy to Cloud Run
 
 on:
   push:
-    branches: [ develop ]  # develop 브랜치에 push가 일어날 때 실행
+    branches:
+      - deploy
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4  # 저장소 코드 체크아웃
-
-      - name: Set up JDK 17  # Java 개발 킷 설정
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Make application.yml  # application.yml 파일 생성
-        run: |
-          # resources 폴더가 없으면 생성
-          mkdir -p src/main/resources
-    
-          # 시크릿을 application.yml 로 주입 (멀티라인 안전하게 printf 사용)
-          printf '%s\n' "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
-        shell: bash
-
-      - name: Grant execute permission for gradlew  # gradlew 실행 권한 부여
-        run: chmod +x gradlew
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build with Gradle(Test 제외)
-        run: ./gradlew build --exclude-task test
-
-      - name: Upload build artifact  # 빌드된 아티팩트 업로드
-        uses: actions/upload-artifact@v4
-        with:
-          name: uddangtangtang-server
-          path: build/libs/*.jar
-
   deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download build artifact  # 이전 단계에서 업로드한 아티팩트 다운로드
-        uses: actions/download-artifact@v4
-        with:
-          name: uddangtangtang-server
-          path: build/libs/
+      - name: GitHub Repo 불러오기
+        uses: actions/checkout@v4
 
-      - name: Deploy to EC2  # EC2에 배포
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+      - name: JDK 17 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: application.yml 생성
+        run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
+
+      - name: Gradle 권한 부여 및 빌드
         run: |
-          echo "$EC2_SSH_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/uddangtangtang-server.jar
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
-            sleep 10
-            nohup java -jar /home/$EC2_USERNAME/uddangtangtang-server.jar > app.log 2>&1 &  # 새 버전 애플리케이션 실행
-          "
-          rm -f private_key.pem  # 민감한 정보 삭제
+          chmod +x ./gradlew
+          ./gradlew clean build
+
+      - name: GCP 인증 (서비스 계정 키)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: gcloud SDK 설정
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Artifact Registry 로그인
+        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
+
+      - name: Docker 이미지 빌드 및 푸시
+        run: |
+          docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
+          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
+
+      - name: Cloud Run 배포
+        run: |
+          gcloud run deploy spring-app \
+            --image asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest \
+            --platform managed \
+            --region asia-northeast3 \
+            --allow-unauthenticated \
+            --quiet
