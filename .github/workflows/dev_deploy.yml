@@ -39,13 +39,14 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Artifact Registry 로그인
+      - name: Docker를 위한 gcloud 인증 설정
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
 
-      - name: Docker 이미지 빌드 및 푸시
-        run: |
-          docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
-          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
+      - name: Docker 이미지 생성 및 태그 설정
+        run: docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
+
+      - name: Docker 이미지 푸시
+        run: docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
 
       - name: Cloud Run 배포
         run: |
