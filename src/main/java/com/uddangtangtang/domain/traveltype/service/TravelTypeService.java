@@ -86,7 +86,7 @@ public class TravelTypeService
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,image,description,name,reason,uuid);
+            return new TypeResponse(code,reason,image,description,name, recommendations,uuid);
         }
 
 
@@ -101,15 +101,17 @@ public class TravelTypeService
         TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
         TravelType travelType = travelTypeTestResult.getTravelType();
-        List<TourSpotSimpleDto> tourSpotList= tourSpotRepository.findByTravelType(travelType)
-                .stream().map(spot->new TourSpotSimpleDto(spot.getName(),spot.getDescription())).toList();
+        List<String> recommendations = tourSpotRepository.findByTravelType(travelType)
+                .stream()
+                .map(spot -> spot.getName() + ": " + spot.getDescription())
+                .toList();
         return new TypeResponse(
                 travelType.getCode(),
                 travelTypeTestResult.getReason(),
                 travelType.getImage(),
                 travelType.getTypeDescription(),
                 travelType.getTypeName(),
-                tourSpotList,
+                recommendations,
                 travelTypeTestResult.getId()
         );
     }
