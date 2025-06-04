@@ -4,11 +4,14 @@ package com.uddangtangtang.domain.traveltype.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
+import com.uddangtangtang.domain.traveltype.domain.TourSpot;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
+import com.uddangtangtang.domain.traveltype.dto.response.TourSpotSimpleDto;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
+import com.uddangtangtang.domain.traveltype.repository.TourSpotRepository;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestLogRepository;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestResultRepository;
@@ -23,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,6 +39,7 @@ public class TravelTypeService
     private final TravelTypeRepository travelTypeRepository;
     private final TravelTypeTestLogRepository travelTypeTestLogRepository;
     private final TravelTypeTestResultRepository travelTypeTestResultRepository;
+    private final TourSpotRepository  tourSpotRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
 
@@ -47,8 +53,7 @@ public class TravelTypeService
         String image = "";
         String description = "";
         String name = "";
-        String recommand = "";
-        //에러 났을 경우 하드 코딩
+        List<String> recommendations=new ArrayList<>();
         String uuid = UUID.randomUUID().toString();
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
@@ -58,12 +63,13 @@ public class TravelTypeService
                     .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
             description=travelType.getTypeDescription();
             name=travelType.getTypeName();
-            recommand=travelType.getTripRecommand();
+
             image=travelType.getImage();
 
-
-
-
+            recommendations = tourSpotRepository.findByTravelType(travelType)
+                    .stream()
+                    .map(spot -> spot.getName() + ": " + spot.getDescription())
+                    .toList();
             travelTypeTestLogRepository.save(new TravelTypeTestLog());
             TravelTypeTestResult result = new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now());
             travelTypeTestResultRepository.save(result);
@@ -74,13 +80,13 @@ public class TravelTypeService
                     image,
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
-                    travelType.getTripRecommand(),
+                    recommendations,
                     uuid);
         } catch (Exception e) {
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,image,description,name,recommand,uuid);
+            return new TypeResponse(code,reason,image,description,name, recommendations,uuid);
         }
 
 
@@ -95,13 +101,17 @@ public class TravelTypeService
         TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
         TravelType travelType = travelTypeTestResult.getTravelType();
+        List<String> recommendations = tourSpotRepository.findByTravelType(travelType)
+                .stream()
+                .map(spot -> spot.getName() + ": " + spot.getDescription())
+                .toList();
         return new TypeResponse(
                 travelType.getCode(),
                 travelTypeTestResult.getReason(),
                 travelType.getImage(),
                 travelType.getTypeDescription(),
                 travelType.getTypeName(),
-                travelType.getTripRecommand(),
+                recommendations,
                 travelTypeTestResult.getId()
         );
     }

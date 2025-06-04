@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity(name = "TravelType")
 @Data
 @NoArgsConstructor
@@ -25,7 +28,8 @@ public class TravelType
 
     private String image;
 
+    @OneToMany(mappedBy = "travelType", fetch = FetchType.LAZY)
+    private List<TourSpot> tourSpots = new ArrayList<>();
 
-    @Column(name = "trip_recommand")
-    private String tripRecommand;// 여행지 추천임다
+
 }
