@@ -2,57 +2,56 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ develop ]  # develop 브랜치에 push가 일어날 때 실행
+    branches:
+      - develop
+      - release/*
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4  # 저장소 코드 체크아웃
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17  # Java 개발 킷 설정
-        uses: actions/setup-java@v3
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      - name: Make application.yml  # application.yml 파일 생성
+      - name: Create application.yml
         run: |
-          # resources 폴더가 없으면 생성
           mkdir -p src/main/resources
-    
-          # 시크릿을 application.yml 로 주입 (멀티라인 안전하게 printf 사용)
           printf '%s\n' "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
         shell: bash
 
-      - name: Grant execute permission for gradlew  # gradlew 실행 권한 부여
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Gradle(Test 제외)
+      - name: Build with Gradle (Test 제외)
         run: ./gradlew build --exclude-task test
 
-      - name: Upload build artifact  # 빌드된 아티팩트 업로드
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: uddangtangtang-server
           path: build/libs/*.jar
 
-  deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Download build artifact  # 이전 단계에서 업로드한 아티팩트 다운로드
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: uddangtangtang-server
           path: build/libs/
 
-      - name: Deploy to EC2  # EC2에 배포
+      - name: Deploy to EC2
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
@@ -63,8 +62,61 @@ jobs:
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/uddangtangtang-server.jar
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
+            pgrep java | xargs -r kill -15
             sleep 10
-            nohup java -jar /home/$EC2_USERNAME/uddangtangtang-server.jar > app.log 2>&1 &  # 새 버전 애플리케이션 실행
+            nohup java -jar /home/$EC2_USERNAME/uddangtangtang-server.jar > app.log 2>&1 &
           "
-          rm -f private_key.pem  # 민감한 정보 삭제
+          rm -f private_key.pem
+
+  deploy-release:
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Create application.yml
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build --exclude-task test
+
+      - name: Auth GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build & Push Docker
+        run: |
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest .
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy spring-app \
+            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-image/backend:latest \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --quiet
