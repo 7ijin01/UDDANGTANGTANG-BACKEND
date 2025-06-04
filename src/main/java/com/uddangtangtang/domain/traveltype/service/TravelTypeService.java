@@ -53,7 +53,7 @@ public class TravelTypeService
         String image = "";
         String description = "";
         String name = "";
-        List<TourSpotSimpleDto> tourSpotList= new ArrayList<>();
+        List<String> recommendations=new ArrayList<>();
         String uuid = UUID.randomUUID().toString();
         try {
             JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
@@ -66,9 +66,10 @@ public class TravelTypeService
 
             image=travelType.getImage();
 
-            tourSpotList= tourSpotRepository.findByTravelType(travelType)
-                            .stream().map(spot->new TourSpotSimpleDto(spot.getName(),spot.getDescription())).toList();
-
+            recommendations = tourSpotRepository.findByTravelType(travelType)
+                    .stream()
+                    .map(spot -> spot.getName() + ": " + spot.getDescription())
+                    .toList();
             travelTypeTestLogRepository.save(new TravelTypeTestLog());
             TravelTypeTestResult result = new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now());
             travelTypeTestResultRepository.save(result);
@@ -79,13 +80,13 @@ public class TravelTypeService
                     image,
                     travelType.getTypeDescription(),
                     travelType.getTypeName(),
-                    tourSpotList,
+                    recommendations,
                     uuid);
         } catch (Exception e) {
             log.error("AI 응답 파싱 실패", e);
 // \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
 
-            return new TypeResponse(code,reason,image,description,name,tourSpotList,uuid);
+            return new TypeResponse(code,reason,image,description,name,reason,uuid);
         }
 
 
