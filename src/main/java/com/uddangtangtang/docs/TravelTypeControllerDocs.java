@@ -22,8 +22,7 @@ import java.io.IOException;
 @Tag(name = "여행 유형 테스트 API")
 public interface TravelTypeControllerDocs
 {
-    @Operation(summary = "여행 유형 테스트", description = "12가지 질문에 대한 답을 RequestBody로 넣음\n" +
-            "3가지 축에 대한 답을 넘겨주면 됨 ex) planAnswer : A-B-B-B")
+    @Operation(summary = "여행 유형 테스트", description = "12가지 질문에 대한 답을 RequestBody로 넣음 ex) A-B-B-B-A-B-B-A-B-B-B-A")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "유형 테스트 성공"),
             @ApiResponse(responseCode = "500", description = "서버 에러",

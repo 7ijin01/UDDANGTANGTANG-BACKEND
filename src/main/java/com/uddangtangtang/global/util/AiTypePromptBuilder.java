@@ -5,9 +5,8 @@ import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
 public class AiTypePromptBuilder {
 
     public static String buildPromptFromRequest(TypeRequest request) {
-        String[] plan = request.planAnswer().split("-");
-        String[] energy = request.energyAnswer().split("-");
-        String[] money = request.moneyAnswer().split("-");
+        String[] plan = request.answer().split("-");
+
 
         return """
 너는 여행 성향 분석가야.
@@ -21,32 +20,32 @@ public class AiTypePromptBuilder {
 (1) 계획성
 Q1. 비행기 표가 갑자기 생겼다!
 - 선택: %s (A: 1점 / B: 1점)
-Q2. 식당이 닫혔다면?
+Q2. 가려던 식당이 닫혀 있다면?!
 - 선택: %s (A: 1점 / B: 1점)
-Q3. 자유여행을 간다면? (우선순위)
+Q3. 자유여행을 가게 된다면? (우선순위)
 - 선택: %s (A: 2점 / B: 2점)
 Q4. 여행 전날, 짐 싸면서 드는 생각은?
 - 선택: %s (A: 1점 / B: 1점)
 
 
 (2) 에너지 방향
-Q1. 여행 준비
+Q1. 여행 준비 시간! 당신은?
 - 선택: %s (A: 1점 / B: 1점)
-Q2. 저녁 시간
+Q2. 낯선 여행지에서의 저녁!
 - 선택: %s (A: 1점 / B: 1점)
-Q3. 우연히 만난 사람
+Q3. 여행지에서 우연히 만난 사람과 대화가 시작됐다면?(우선순위)
 - 선택: %s (A: 1점 / B: 1점)
-Q4. 여행 끝나고 느낀 점은? (우선순위)
+Q4. 여행 끝나고 느낀 점은?
 - 선택: %s (A: 2점 / B: 2점)
 
 (3) 소비 성향
-Q1. 숙소 선택
+Q1. 숙소 예약할 때 가장 먼저 보는 건?
 - 선택: %s (A: 1점 / B: 1점)
-Q2. 맛집 선택
+Q2. 비슷한 맛집 두 곳이 있다면?
 - 선택: %s (A: 1점 / B: 1점)
-Q3. 예쁜 소품 발견
+Q3. 쇼핑 거리를 걷던 중, 예상치 못한 예쁜 소품 발견!
 - 선택: %s (A: 1점 / B: 1점)
-Q4. 교통수단을 고를 때는? (우선순위)
+Q4. 교통수단을 고를 때는?(우선순위)
 - 선택: %s (A: 2점 / B: 2점)
 
 [요구사항]
@@ -78,9 +77,10 @@ Q4. 교통수단을 고를 때는? (우선순위)
          "reason": "할인과 특가, 쿠폰은 절대 못 지나치는 알뜰한 여행 스타일! 여행에서도 철저한 예산 관리와 계획으로 최소의 비용으로 최대의 만족을 추구하는 실속파예요. 소소한 것에서 행복을 찾고, 혼자서도 여행을 즐길 줄 아는 ‘가성비 여행 마스터’!"
         }
         """.formatted(
-                plan[0], plan[1], plan[2], plan[3],
-                energy[0], energy[1], energy[2], energy[3],
-                money[0], money[1], money[2], money[3]
+                plan[1], plan[6], plan[0], plan[4],
+                plan[2], plan[10], plan[9], plan[11],
+                plan[3], plan[7], plan[8], plan[5]
+
         );
     }
 }
