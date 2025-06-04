@@ -19,14 +19,22 @@ public class CompatibilityLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        List<String> codes = typeRepo.findAll().stream().map(TravelType::getCode).toList();
-        for (int i = 0; i < codes.size(); i++) {
-            for (int j = i; j < codes.size(); j++) {
-                String my = codes.get(i);
-                String other = codes.get(j);
-                compatibilityService.computeCompatibility(
-                        new CompatibilityRequest(my.equals("?") ? "" : my, other));
-                log.info("Preloaded compatibility: {} - {}", my, other);
+        // 1) TravelType 엔티티에서 typeName(예: "무념무상 힐링러")을 뽑아온다
+        List<String> names = typeRepo.findAll().stream()
+                .map(TravelType::getTypeName)
+                .toList();
+
+        // 2) 이중 루프로 i ≤ j 순서로 조합
+        for (int i = 0; i < names.size(); i++) {
+            for (int j = i; j < names.size(); j++) {
+                String myName    = names.get(i);
+                String otherName = names.get(j);
+                // 3) typeName 기반 새로운 DTO를 만든 뒤, 서비스 호출
+                CompatibilityRequest req =
+                        new CompatibilityRequest(myName, otherName);
+
+                compatibilityService.computeCompatibility(req);
+                log.info("Preloaded compatibility by name: {} - {}", myName, otherName);
             }
         }
     }
