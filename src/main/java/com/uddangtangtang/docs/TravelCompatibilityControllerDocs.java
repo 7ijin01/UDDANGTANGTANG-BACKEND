@@ -2,6 +2,7 @@ package com.uddangtangtang.docs;
 
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
+import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityShareResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -47,6 +48,6 @@ public interface TravelCompatibilityControllerDocs {
                     )
             )
     })
-    ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<CompatibilityResponse>> requestCompatibilityTest(@PathVariable String id);
+    ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<CompatibilityShareResponse>> requestCompatibilityTest(@PathVariable String id);
 }
 
