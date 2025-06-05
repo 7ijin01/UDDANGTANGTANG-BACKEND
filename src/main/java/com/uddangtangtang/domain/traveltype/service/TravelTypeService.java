@@ -19,8 +19,10 @@ import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
 import com.uddangtangtang.global.util.AiTypePromptBuilder;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +44,8 @@ public class TravelTypeService
     private final TourSpotRepository  tourSpotRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
+
+    private Long cachedCount = 0L;
 
     public TypeResponse generateTravelType(TypeRequest request)
     {
@@ -91,9 +95,17 @@ public class TravelTypeService
 
 
     }
+
+
+    @PostConstruct
+    @Scheduled(fixedRate = 5 * 60 * 1000)
+    public void updateCachedCount() {
+        cachedCount = travelTypeTestLogRepository.count();
+    }
+
     public Long getTestCount()
     {
-        return travelTypeTestLogRepository.count();
+        return cachedCount;
     }
 
     public TypeResponse getShareResult(String uuid)
