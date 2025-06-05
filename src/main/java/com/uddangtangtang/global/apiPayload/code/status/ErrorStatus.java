@@ -25,6 +25,8 @@ public enum ErrorStatus implements BaseErrorCode {
     /* ===== 공유 유형 생성 ===== */
     RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVEL_TYPE_001", "해당 테스트 결과가 존재하지 않습니다."),
 
+    NULL_IS_NOT_ALLOWED(HttpStatus.NOT_FOUND,"TRAVEL_TYPE_001","여행 유형은 빈 값이어서는 안 됩니다"),
+
     /* ===== 검증/리소스 ===== */
     VALIDATION_ERROR ("COMMON400A", "유효성 검증 실패"),
     NOT_FOUND        (HttpStatus.NOT_FOUND, "COMMON404", "리소스를 찾을 수 없습니다.")

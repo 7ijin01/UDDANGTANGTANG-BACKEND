@@ -3,6 +3,7 @@ package com.uddangtangtang.domain.compatibility.controller;
 import com.uddangtangtang.docs.TravelCompatibilityControllerDocs;
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
+import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityShareResponse;
 import com.uddangtangtang.domain.compatibility.service.TravelCompatibilityService;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.global.apiPayload.ApiResponse;
@@ -26,7 +27,7 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
         );
     }
     @GetMapping("/compatibility/share/{id}")
-    public ResponseEntity<ApiResponse<CompatibilityResponse>> requestCompatibilityTest(@PathVariable String id)
+    public ResponseEntity<ApiResponse<CompatibilityShareResponse>> requestCompatibilityTest(@PathVariable String id)
     {
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK,compatibilityService.getShareResult(id)));
     }

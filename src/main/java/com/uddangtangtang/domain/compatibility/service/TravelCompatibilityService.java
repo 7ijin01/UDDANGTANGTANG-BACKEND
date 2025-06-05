@@ -6,9 +6,11 @@ import com.uddangtangtang.domain.compatibility.domain.Compatibility;
 import com.uddangtangtang.domain.compatibility.domain.CompatibilityTestResult;
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
+import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityShareResponse;
 import com.uddangtangtang.domain.compatibility.repository.CompatibilityRepository;
 import com.uddangtangtang.domain.compatibility.repository.CompatibilityResultRepository;
-import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
+import com.uddangtangtang.domain.traveltype.domain.TravelType;
+import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
@@ -34,9 +36,13 @@ public class TravelCompatibilityService {
     private final ObjectMapper objectMapper;
     private final CompatibilityRepository compatibilityRepo;
     private final CompatibilityResultRepository compatibilityResultRepo;
+    private final TravelTypeRepository travelTypeRepository;
+
+
 
     @Transactional
     public CompatibilityResponse computeCompatibility(CompatibilityRequest request) {
+
         String t1 = request.myType() == null || request.myType().isBlank() ? "?" : request.myType();
         String t2 = request.otherType();
         String typeA = t1.compareTo(t2) <= 0 ? t1 : t2;
@@ -48,6 +54,7 @@ public class TravelCompatibilityService {
         Optional<Compatibility> cached = compatibilityRepo.findByTypeAAndTypeB(typeA, typeB);
         if (cached.isPresent()) {
             compatibility = cached.get();
+
             try {
                 JsonNode node = objectMapper.readTree(compatibility.getResponseJson());
                 resp = parseJsonWithNewUUID(node);
@@ -110,23 +117,26 @@ public class TravelCompatibilityService {
         return new CompatibilityResponse(result, tips, conflict, recs,uuid);
     }
 
-    private CompatibilityResponse parseJsonWithFixedUUID(JsonNode node, String uuid) {
+    private CompatibilityShareResponse parseJsonWithFixedUUID(JsonNode node, String uuid,String myImage,String otherImage) {
         String result = node.path("result").asText();
         String tips = node.path("tips").asText();
         String conflict = node.path("conflictPoints").asText();
         List<String> recs = new ArrayList<>();
         node.withArray("recommendations").forEach(n -> recs.add(n.asText()));
-        return new CompatibilityResponse(result, tips, conflict, recs, uuid);
+
+        return new CompatibilityShareResponse(result, tips, conflict, recs, uuid,myImage,otherImage);
     }
 
-    public CompatibilityResponse getShareResult(String id)
+    public CompatibilityShareResponse getShareResult(String id)
     {
         CompatibilityTestResult testResult = compatibilityResultRepo.findTravelCompatibilityById(id)
                 .orElseThrow(()->new GeneralException(RESULT_NOT_FOUND));
         Compatibility compatibility=testResult.getCompatibility();
+        String myImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeA()).get().getImage();
+        String otherImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeB()).get().getImage();
         try {
             JsonNode node = objectMapper.readTree(compatibility.getResponseJson());
-            return parseJsonWithFixedUUID(node, testResult.getId());
+            return parseJsonWithFixedUUID(node, testResult.getId(),myImage,otherImage);
         } catch (Exception e) {
             log.error("Failed to parse compatibility result from DB", e);
             throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
