@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface CompatibilityRepository extends JpaRepository<Compatibility, Long> {
     Optional<Compatibility> findByTypeAAndTypeB(String typeA, String typeB);
+
 }
 
