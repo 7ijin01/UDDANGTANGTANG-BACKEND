@@ -12,6 +12,5 @@ import java.util.Optional;
 @Repository
 public interface CompatibilityResultRepository extends JpaRepository<CompatibilityTestResult,String>
 {
-    @Query("SELECT r FROM CompatibilityTestResult r LEFT JOIN FETCH r.compatibility WHERE r.id = :id")
-    Optional<CompatibilityTestResult> findTravelCompatibilityById(String id);
+   Optional<CompatibilityTestResult> findCompatibilityTestResultById(String id);
 }

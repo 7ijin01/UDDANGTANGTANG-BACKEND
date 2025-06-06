@@ -21,9 +21,13 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
     @PostMapping("/compatibility")
     public ResponseEntity<ApiResponse<CompatibilityResponse>> getCompatibility(
             @RequestBody CompatibilityRequest request) {
+        CompatibilityResponse response = compatibilityService.computeCompatibility(request);
+
+        compatibilityService.saveCompatibilityTestResult(request, response);
+
         return ResponseEntity.ok(
                 ApiResponse.onSuccess(SuccessStatus._OK,
-                        compatibilityService.computeCompatibility(request))
+                        response)
         );
     }
     @GetMapping("/compatibility/share/{id}")

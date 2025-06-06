@@ -10,6 +10,7 @@ import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityShareRe
 import com.uddangtangtang.domain.compatibility.repository.CompatibilityRepository;
 import com.uddangtangtang.domain.compatibility.repository.CompatibilityResultRepository;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
+import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
@@ -58,6 +59,7 @@ public class TravelCompatibilityService {
             try {
                 JsonNode node = objectMapper.readTree(compatibility.getResponseJson());
                 resp = parseJsonWithNewUUID(node);
+
             } catch (Exception e) {
                 log.warn("Cache parse error, regenerating AI response", e);
                 throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
@@ -76,13 +78,14 @@ public class TravelCompatibilityService {
                         .responseJson(jsonResp)
                         .build();
                 compatibilityRepo.save(compatibility);
+
+
             } catch (Exception e) {
                 log.warn("Failed to save compatibility cache", e);
                 throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
             }
         }
-        CompatibilityTestResult result = new CompatibilityTestResult(resp.shareId(), compatibility, LocalDateTime.now());
-        compatibilityResultRepo.save(result);
+
 
         return resp;
     }
@@ -129,17 +132,43 @@ public class TravelCompatibilityService {
 
     public CompatibilityShareResponse getShareResult(String id)
     {
-        CompatibilityTestResult testResult = compatibilityResultRepo.findTravelCompatibilityById(id)
-                .orElseThrow(()->new GeneralException(RESULT_NOT_FOUND));
-        Compatibility compatibility=testResult.getCompatibility();
-        String myImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeA()).get().getImage();
-        String otherImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeB()).get().getImage();
+
+       CompatibilityTestResult compatibilityTestResult=compatibilityResultRepo.findCompatibilityTestResultById(id)
+               .orElseThrow(()->new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
+
+
+       TravelType travelTypeA=travelTypeRepository.findTravelTypeByCode(compatibilityTestResult.getTypeA())
+               .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+       TravelType travelTypeB=travelTypeRepository.findTravelTypeByCode(compatibilityTestResult.getTypeB())
+               .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+
         try {
-            JsonNode node = objectMapper.readTree(compatibility.getResponseJson());
-            return parseJsonWithFixedUUID(node, testResult.getId(),myImage,otherImage);
+            JsonNode node = objectMapper.readTree(compatibilityTestResult.getResponseJson());
+            return parseJsonWithFixedUUID(node, id, travelTypeA.getImage(), travelTypeB.getImage());
         } catch (Exception e) {
-            log.error("Failed to parse compatibility result from DB", e);
+            log.error("Failed to parse responseJson for share result", e);
+            throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
+        }
+
+    }
+    @Transactional
+    public void saveCompatibilityTestResult(CompatibilityRequest request, CompatibilityResponse resp) {
+        String t1 = request.myType() == null || request.myType().isBlank() ? "?" : request.myType();
+        String t2 = request.otherType();
+        String typeA = t1.compareTo(t2) <= 0 ? t1 : t2;
+        String typeB = t1.compareTo(t2) <= 0 ? t2 : t1;
+
+        try {
+            String jsonResp = objectMapper.writeValueAsString(resp);
+
+            CompatibilityTestResult result = new CompatibilityTestResult(
+                    resp.shareId(), typeA, typeB, jsonResp, LocalDateTime.now()
+            );
+            compatibilityResultRepo.save(result);
+        } catch (Exception e) {
             throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
         }
     }
+
+
 }

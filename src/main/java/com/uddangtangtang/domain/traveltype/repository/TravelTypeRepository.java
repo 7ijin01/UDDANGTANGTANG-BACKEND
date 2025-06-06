@@ -12,5 +12,5 @@ public interface TravelTypeRepository extends JpaRepository<TravelType, Long>, C
 {
     Optional<TravelType> findTravelTypeByCode(String code);
     Optional<TravelType> findTravelTypeById(Long type_id);
-    Optional<TravelType> findByTypeName(String typeName);
+    Optional<TravelType> findTravelTypeByTypeName(String typeName);
 }
