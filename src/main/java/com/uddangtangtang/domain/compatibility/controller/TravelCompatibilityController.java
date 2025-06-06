@@ -27,7 +27,7 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
 
         return ResponseEntity.ok(
                 ApiResponse.onSuccess(SuccessStatus._OK,
-                        compatibilityService.computeCompatibility(request))
+                        response)
         );
     }
     @GetMapping("/compatibility/share/{id}")
