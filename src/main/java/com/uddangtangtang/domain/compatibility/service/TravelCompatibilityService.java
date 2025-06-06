@@ -132,8 +132,14 @@ public class TravelCompatibilityService {
         CompatibilityTestResult testResult = compatibilityResultRepo.findTravelCompatibilityById(id)
                 .orElseThrow(()->new GeneralException(RESULT_NOT_FOUND));
         Compatibility compatibility=testResult.getCompatibility();
-        String myImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeA()).get().getImage();
-        String otherImage= travelTypeRepository.findTravelTypeByCode(compatibility.getTypeB()).get().getImage();
+        TravelType travelTypeA = travelTypeRepository.findTravelTypeByTypeName(compatibility.getTypeA())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+        TravelType travelTypeB = travelTypeRepository.findTravelTypeByTypeName(compatibility.getTypeB())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+
+        String myImage=travelTypeA.getImage();
+        String otherImage=travelTypeB.getImage();
+
         try {
             JsonNode node = objectMapper.readTree(compatibility.getResponseJson());
             return parseJsonWithFixedUUID(node, testResult.getId(),myImage,otherImage);
