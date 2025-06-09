@@ -137,9 +137,9 @@ public class TravelCompatibilityService {
                .orElseThrow(()->new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
 
 
-       TravelType travelTypeA=travelTypeRepository.findTravelTypeByCode(compatibilityTestResult.getTypeA())
+       TravelType travelTypeA=travelTypeRepository.findTravelTypeByTypeName(compatibilityTestResult.getTypeA())
                .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
-       TravelType travelTypeB=travelTypeRepository.findTravelTypeByCode(compatibilityTestResult.getTypeB())
+       TravelType travelTypeB=travelTypeRepository.findTravelTypeByTypeName(compatibilityTestResult.getTypeB())
                .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
 
         try {
