@@ -2,8 +2,10 @@ package com.uddangtangtang;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class UddangtangtangApplication {
 
     public static void main(String[] args) {
