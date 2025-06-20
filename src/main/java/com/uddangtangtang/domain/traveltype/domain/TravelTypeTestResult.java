@@ -16,6 +16,8 @@ public class TravelTypeTestResult
     @JoinColumn(name = "travel_type")
     private TravelType travelType;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String reason;
 
     private LocalDateTime createdAt;
