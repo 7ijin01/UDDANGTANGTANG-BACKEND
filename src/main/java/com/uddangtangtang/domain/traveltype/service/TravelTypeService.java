@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -49,44 +50,42 @@ public class TravelTypeService
     private Long cachedCount = 0L;
 
     public TypeResponse generateTravelType(TypeRequest request) {
-        String rawAnswer = request.answer(); // A-B-A-... 형태
-        String code = calculateTypeCode(rawAnswer); // 점수 기반으로 코드 계산
-        String reason = "";
+        String rawAnswer = request.answer();
+        String code = calculateTypeCode(rawAnswer);
         String uuid = UUID.randomUUID().toString();
 
         TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
+
         String description = travelType.getTypeDescription();
         String name = travelType.getTypeName();
         String image = travelType.getImage();
-        try {
-            String prompt = AiTypeReasonPromptBuilder.buildPromptFromRequest(description);
-            String aiResponse = aiService.askChatGPT(prompt).block();  // 비동기 응답 처리
-            reason = aiResponse != null ? aiResponse.trim() : "";
-        } catch (Exception e) {
-            log.error("GPT reason 생성 실패", e);
-            throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
-        }
 
+        String prompt = AiTypeReasonPromptBuilder.buildPromptFromRequest(description);
+        Mono<String> reasonMono = aiService.askChatGPT(prompt); // 비동기 처리
 
-        List<String> recommendations = tourSpotRepository.findByTravelType(travelType)
-                .stream()
-                .map(spot -> spot.getName() + ": " + spot.getDescription())
-                .toList();
-
-        travelTypeTestLogRepository.save(new TravelTypeTestLog());
-        TravelTypeTestResult result = new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now());
-        travelTypeTestResultRepository.save(result);
-
-        return new TypeResponse(
-                code,
-                reason,
-                image,
-                description,
-                name,
-                recommendations,
-                uuid
+        Mono<List<String>> recommendationsMono = Mono.fromCallable(() ->
+                tourSpotRepository.findByTravelType(travelType)
+                        .stream()
+                        .map(spot -> spot.getName() + ": " + spot.getDescription())
+                        .toList()
         );
+
+        return Mono.zip(reasonMono, recommendationsMono)
+                .map(tuple -> {
+                    String reason = tuple.getT1().trim();
+                    List<String> recommendations = tuple.getT2();
+
+                    travelTypeTestLogRepository.save(new TravelTypeTestLog());
+                    travelTypeTestResultRepository.save(
+                            new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now())
+                    );
+
+                    return new TypeResponse(
+                            code, reason, image, description, name, recommendations, uuid
+                    );
+                })
+                .block(); // 최종 조합된 결과 기다림
     }
 
 
