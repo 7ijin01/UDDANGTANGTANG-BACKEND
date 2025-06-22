@@ -19,12 +19,14 @@ import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
 import com.uddangtangtang.global.util.AiTypePromptBuilder;
+import com.uddangtangtang.global.util.AiTypeReasonPromptBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -47,54 +49,45 @@ public class TravelTypeService
 
     private Long cachedCount = 0L;
 
-    public TypeResponse generateTravelType(TypeRequest request)
-    {
-        String prompt= AiTypePromptBuilder.buildPromptFromRequest(request);
-        String aiRawResponse = aiService.askChatGPT(prompt).block();
-        log.info(aiRawResponse);
-        String code = "";
-        String reason = "";
-        String image = "";
-        String description = "";
-        String name = "";
-        List<String> recommendations=new ArrayList<>();
+    public TypeResponse generateTravelType(TypeRequest request) {
+        String rawAnswer = request.answer();
+        String code = calculateTypeCode(rawAnswer);
         String uuid = UUID.randomUUID().toString();
-        try {
-            JsonNode jsonNode = objectMapper.readTree(aiRawResponse);
-            code = jsonNode.path("code").asText();
-            reason = jsonNode.has("reason") ? jsonNode.get("reason").asText() : jsonNode.path("reson").asText(); // 오타 대응
-            TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
-                    .orElseThrow(()->new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
-            description=travelType.getTypeDescription();
-            name=travelType.getTypeName();
 
-            image=travelType.getImage();
+        TravelType travelType = travelTypeRepository.findTravelTypeByCode(code)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.TYPE_NOT_FOUND));
 
-            recommendations = tourSpotRepository.findByTravelType(travelType)
-                    .stream()
-                    .map(spot -> spot.getName() + ": " + spot.getDescription())
-                    .toList();
-            travelTypeTestLogRepository.save(new TravelTypeTestLog());
-            TravelTypeTestResult result = new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now());
-            travelTypeTestResultRepository.save(result);
+        String description = travelType.getTypeDescription();
+        String name = travelType.getTypeName();
+        String image = travelType.getImage();
 
-            return new TypeResponse(
-                    code,
-                    reason,
-                    image,
-                    travelType.getTypeDescription(),
-                    travelType.getTypeName(),
-                    recommendations,
-                    uuid);
-        } catch (Exception e) {
-            log.error("AI 응답 파싱 실패", e);
-// \          throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
+        String prompt = AiTypeReasonPromptBuilder.buildPromptFromRequest(description);
+        Mono<String> reasonMono = aiService.askChatGPT(prompt); // 비동기 처리
 
-            return new TypeResponse(code,reason,image,description,name, recommendations,uuid);
-        }
+        Mono<List<String>> recommendationsMono = Mono.fromCallable(() ->
+                tourSpotRepository.findByTravelType(travelType)
+                        .stream()
+                        .map(spot -> spot.getName() + ": " + spot.getDescription())
+                        .toList()
+        );
 
+        return Mono.zip(reasonMono, recommendationsMono)
+                .map(tuple -> {
+                    String reason = tuple.getT1().trim();
+                    List<String> recommendations = tuple.getT2();
 
+                    travelTypeTestLogRepository.save(new TravelTypeTestLog());
+                    travelTypeTestResultRepository.save(
+                            new TravelTypeTestResult(uuid, travelType, reason, LocalDateTime.now())
+                    );
+
+                    return new TypeResponse(
+                            code, reason, image, description, name, recommendations, uuid
+                    );
+                })
+                .block(); // 최종 조합된 결과 기다림
     }
+
 
 
     @PostConstruct
@@ -127,6 +120,43 @@ public class TravelTypeService
                 travelTypeTestResult.getId()
         );
     }
+
+    private String[] splitAnswers(String raw) {
+        return raw.split("-");
+    }
+
+    private String calculateAxis(String[] answers, int[] indexes, int priorityIndex) {
+        int aScore = 0;
+        int bScore = 0;
+
+        for (int i = 0; i < indexes.length; i++) {
+            String answer = answers[indexes[i]];
+            int score = (i == priorityIndex) ? 2 : 1;
+
+            if ("A".equalsIgnoreCase(answer)) {
+                aScore += score;
+            } else if ("B".equalsIgnoreCase(answer)) {
+                bScore += score;
+            }
+        }
+
+        if (aScore > bScore) return "A";
+        else if (bScore > aScore) return "B";
+        else {
+            String priorityAnswer = answers[indexes[priorityIndex]];
+            return priorityAnswer.toUpperCase();
+        }
+    }
+    public String calculateTypeCode(String rawAnswer) {
+        String[] answers = splitAnswers(rawAnswer);
+
+        String plan = calculateAxis(answers, new int[]{1, 6, 0, 4}, 2);  // 계획
+        String energy = calculateAxis(answers, new int[]{2, 10, 9, 11}, 2); // 에너지
+        String spending = calculateAxis(answers, new int[]{3, 7, 8, 5}, 3); // 소비
+
+        return String.join("-", plan, energy, spending); // 예: A-B-A
+    }
+
 
 
 
