@@ -1,20 +1,28 @@
 package com.uddangtangtang.global.util;
 
+import java.util.List;
+
 public class AiTravelTypeRecommendPromptBuilder {
+
+    private static final List<String> TRAVEL_CITIES = List.of(
+            "일본 오사카", "일본 후쿠오카", "일본 오키나와", "대만 타이중", "태국 치앙마이",
+            "베트남 다낭", "말레이시아 코타키나발루", "인도네시아 욕야카르타", "필리핀 세부",
+            "우즈베키스탄 사마르칸트", "포르투갈 포르투", "체코 프라하", "크로아티아 두브로브니크",
+            "슬로베니아 류블랴나", "폴란드 크라쿠프", "헝가리 부다페스트", "오스트리아 그라츠",
+            "루마니아 브라쇼브", "에스토니아 탈린", "스페인 톨레도", "캐나다 밴쿠버",
+            "미국 시애틀", "멕시코 과나후아토", "브라질 플로리아노폴리스", "아르헨티나 바릴로체",
+            "칠레 발파라이소", "뉴질랜드 더니든", "프랑스 파리", "스페인 바르셀로나", "일본 교토"
+    );
+
     public static String buildPromptFromTypeResult(String travelTypeResult) {
+        String randomCity = getRandomCity();
+
         return """
                 너는 유쾌하고 위트 있는 고급 여행 플래너야.
 
                 아래 여행 성향 궁합 결과를 참고해서, 이 사람에게 딱 어울리는 **해외 여행지에서의 3일 코스**를 추천해줘.
 
-                목표:
-                - 단순한 장소 나열이 아니라, **여행의 하루하루가 머릿속에 그려지는 느낌**으로 추천해줘.
-                - 각 일정은 **분위기, 감정, 활동 목적, 추천 이유**까지 충분히 설명해.
-                - 읽는 사람 입장에서 "와 여기 진짜 가고 싶다!"는 느낌이 들도록!
-
-                추천 여행지는:
-                - **궁합 결과에 가장 잘 맞는 해외 도시(또는 지역)** 하나를 선정해.
-                - 해당 도시의 특징이 궁합 성향과 잘 어울려야 해.
+                추천 도시는 %s 이야. 오직 이 도시에 대해서만 추천 코스를 작성해.
 
                 일정 구성:
                 - **1일차, 2일차, 3일차**로 나누고,
@@ -29,21 +37,25 @@ public class AiTravelTypeRecommendPromptBuilder {
 
                 출력은 아래 JSON 형식으로 정확하게 반환해줘. 그 외 문장은 절대 출력하지 마.
 
-                [궁합 결과]
+                [여행 성향 결과]
                 %s
 
                 [출력 형식 예시]
                 {
                   "day1": {
-                    "morning": "방콕 짜오프라야강 보트 투어 – 도시 전체를 느긋하게 감상하며 시원한 아침 시작. 배 위에서 바람 맞으며 강가의 사원들과 사람들 구경하기 딱 좋아요.",
-                    "afternoon": "왓 아룬 사원 방문 – 조용하고 고요한 분위기에서 나만의 시간을 보내보세요. 근처 노점에서 망고밥도 챙기면 금상첨화.",
-                    "evening": "아시아티크 야시장 – 강변 따라 걸으며 야경 감상, 스트리트푸드 맛보기, 분위기 좋은 카페에서 하루 마무리.",
-                    "summary": "보트 → 사원 → 강변 야시장으로 천천히 이동하는 느긋한 하루"
-                  },
-                  ...
+                    "morning": "...",
+                    "afternoon": "...",
+                    "evening": "...",
+                    "summary": "..."
+                  }
                 }
-                """.formatted(travelTypeResult);
+                """.formatted(randomCity, travelTypeResult);
+    }
+
+    private static String getRandomCity() {
+        List<String> filtered = TRAVEL_CITIES;
+        return filtered.get((int) (Math.random() * filtered.size()));
+
     }
 }
-
 
