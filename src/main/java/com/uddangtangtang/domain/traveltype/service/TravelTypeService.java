@@ -3,13 +3,11 @@ package com.uddangtangtang.domain.traveltype.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
-import com.uddangtangtang.domain.traveltype.domain.TourSpot;
 import com.uddangtangtang.domain.traveltype.domain.TravelType;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestLog;
 import com.uddangtangtang.domain.traveltype.domain.TravelTypeTestResult;
 import com.uddangtangtang.domain.traveltype.dto.request.TypeRequest;
-import com.uddangtangtang.domain.traveltype.dto.response.TourSpotSimpleDto;
+import com.uddangtangtang.domain.traveltype.dto.response.TravelScheduleResponse;
 import com.uddangtangtang.domain.traveltype.dto.response.TypeResponse;
 import com.uddangtangtang.domain.traveltype.repository.TourSpotRepository;
 import com.uddangtangtang.domain.traveltype.repository.TravelTypeRepository;
@@ -18,20 +16,15 @@ import com.uddangtangtang.domain.traveltype.repository.TravelTypeTestResultRepos
 import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
-import com.uddangtangtang.global.util.AiTypePromptBuilder;
+import com.uddangtangtang.global.util.AiTravelTypeRecommendPromptBuilder;
 import com.uddangtangtang.global.util.AiTypeReasonPromptBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,21 +53,17 @@ public class TravelTypeService
         String description = travelType.getTypeDescription();
         String name = travelType.getTypeName();
         String image = travelType.getImage();
+        String scheduleJson =travelType.getTravelScheduleJson();
+        String typePrompt = AiTypeReasonPromptBuilder.buildPromptFromRequest(description);
 
-        String prompt = AiTypeReasonPromptBuilder.buildPromptFromRequest(description);
-        Mono<String> reasonMono = aiService.askChatGPT(prompt); // 비동기 처리
-
-        Mono<List<String>> recommendationsMono = Mono.fromCallable(() ->
-                tourSpotRepository.findByTravelType(travelType)
-                        .stream()
-                        .map(spot -> spot.getName() + ": " + spot.getDescription())
-                        .toList()
+        Mono<String> reasonMono = aiService.askChatGPT(typePrompt);// 비동기 처리
+        Mono<TravelScheduleResponse> scheduleMono = Mono.fromCallable(() ->
+                objectMapper.readValue(scheduleJson, TravelScheduleResponse.class)
         );
-
-        return Mono.zip(reasonMono, recommendationsMono)
+        return Mono.zip(reasonMono,scheduleMono)
                 .map(tuple -> {
                     String reason = tuple.getT1().trim();
-                    List<String> recommendations = tuple.getT2();
+                    TravelScheduleResponse schedule = tuple.getT2();
 
                     travelTypeTestLogRepository.save(new TravelTypeTestLog());
                     travelTypeTestResultRepository.save(
@@ -82,7 +71,7 @@ public class TravelTypeService
                     );
 
                     return new TypeResponse(
-                            code, reason, image, description, name, recommendations, uuid
+                            code, reason, image, description, name, schedule, uuid
                     );
                 })
                 .block(); // 최종 조합된 결과 기다림
@@ -90,15 +79,39 @@ public class TravelTypeService
 
 
 
-    @PostConstruct
+
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void updateCachedCount() {
         cachedCount = travelTypeTestLogRepository.count();
     }
 
+    @PostConstruct//@Scheduled 이거랑 같이 못 씀 분리해야 제대로 동작합
+    public void init() {
+        updateCachedCount();
+        //updateTripRecommendation();
+    }
     public Long getTestCount()
     {
         return cachedCount;
+    }
+
+    @Scheduled(fixedRate = 7L * 24 * 60 * 60 * 1000)
+    public void updateTripRecommendation() {
+        List<TravelType> travelTypes = travelTypeRepository.findAll();
+
+        for (TravelType travelType : travelTypes) {
+            String description = travelType.getTypeDescription();
+            String request = AiTravelTypeRecommendPromptBuilder.buildPromptFromTypeResult(description);
+
+            aiService.askChatGPT(request)
+                    .doOnNext(response -> {
+                        travelType.setTravelScheduleJson(response);
+                        travelTypeRepository.save(travelType);
+                        log.info("Updated schedule for type {}", travelType.getCode());
+                    })
+                    .doOnError(e -> log.error("여행지 추천 업데이트 실패 {}", travelType.getCode(), e))
+                    .subscribe();
+        }
     }
 
     public TypeResponse getShareResult(String uuid)
@@ -106,19 +119,26 @@ public class TravelTypeService
         TravelTypeTestResult travelTypeTestResult= travelTypeTestResultRepository.findTravelTypeTestResultById(uuid)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
         TravelType travelType = travelTypeTestResult.getTravelType();
-        List<String> recommendations = tourSpotRepository.findByTravelType(travelType)
-                .stream()
-                .map(spot -> spot.getName() + ": " + spot.getDescription())
-                .toList();
-        return new TypeResponse(
-                travelType.getCode(),
-                travelTypeTestResult.getReason(),
-                travelType.getImage(),
-                travelType.getTypeDescription(),
-                travelType.getTypeName(),
-                recommendations,
-                travelTypeTestResult.getId()
-        );
+
+        try {
+            TravelScheduleResponse recommendations = objectMapper.readValue(
+                    travelType.getTravelScheduleJson(),
+                    TravelScheduleResponse.class
+            );
+
+            return new TypeResponse(
+                    travelType.getCode(),
+                    travelTypeTestResult.getReason(),
+                    travelType.getImage(),
+                    travelType.getTypeDescription(),
+                    travelType.getTypeName(),
+                    recommendations,
+                    travelTypeTestResult.getId()
+            );
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST);
+        }
+
     }
 
     private String[] splitAnswers(String raw) {
@@ -139,6 +159,7 @@ public class TravelTypeService
                 bScore += score;
             }
         }
+        log.info("결과{},{}\n",aScore,bScore);
 
         if (aScore > bScore) return "A";
         else if (bScore > aScore) return "B";
