@@ -7,6 +7,7 @@ import com.uddangtangtang.domain.compatibility.domain.Compatibility;
 import com.uddangtangtang.domain.compatibility.domain.CompatibilityTestResult;
 import com.uddangtangtang.domain.compatibility.domain.CompatibilityTripRecommend;
 import com.uddangtangtang.domain.compatibility.dto.request.CompatibilityRequest;
+import com.uddangtangtang.domain.compatibility.dto.response.Compatibility4CutShareResponse;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityResponse;
 import com.uddangtangtang.domain.compatibility.dto.response.CompatibilityShareResponse;
 import com.uddangtangtang.domain.compatibility.repository.CompatibilityRepository;
@@ -209,7 +210,7 @@ public class TravelCompatibilityService {
 
         try {
             JsonNode node = objectMapper.readTree(compatibilityTestResult.getResponseJson());
-            return parseJsonWithFixedUUID(node, id, travelTypeA.getImage(), travelTypeB.getImage(),travelTypeA.getTypeName(),travelTypeB.getTypeName());
+            return parseJsonWithFixedUUID(node, id, travelTypeA.getImage(), travelTypeB.getImage());
         } catch (Exception e) {
             log.error("Failed to parse responseJson for share result", e);
             throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
@@ -235,5 +236,14 @@ public class TravelCompatibilityService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public Compatibility4CutShareResponse get4CutShare(String shareId) {
+        CompatibilityTestResult testResult = compatibilityResultRepo
+                .findCompatibilityTestResultById(shareId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.RESULT_NOT_FOUND));
 
+        // 여기에 추가 검증 로직(예: 만화 생성 여부 확인)이 필요하다면 넣을 수 있습니다.
+
+        return new Compatibility4CutShareResponse(testResult.getId());
+    }
 }
