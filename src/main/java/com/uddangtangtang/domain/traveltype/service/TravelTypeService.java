@@ -85,6 +85,16 @@ public class TravelTypeService
         cachedCount = travelTypeTestLogRepository.count();
     }
 
+    @PostConstruct//@Scheduled 이거랑 같이 못 씀 분리해야 제대로 동작합
+    public void init() {
+        updateCachedCount();
+        updateTripRecommendation();
+    }
+    public Long getTestCount()
+    {
+        return cachedCount;
+    }
+
     @Scheduled(fixedRate = 7L * 24 * 60 * 60 * 1000)
     public void updateTripRecommendation() {
         List<TravelType> travelTypes = travelTypeRepository.findAll();
@@ -102,16 +112,6 @@ public class TravelTypeService
                     .doOnError(e -> log.error("여행지 추천 업데이트 실패 {}", travelType.getCode(), e))
                     .subscribe();
         }
-    }
-    @PostConstruct//@Scheduled 이거랑 같이 못 씀 분리해야 제대로 동작합
-    public void init() {
-        updateCachedCount();
-//        updateTripRecommendation();
-    }
-
-    public Long getTestCount()
-    {
-        return cachedCount;
     }
 
     public TypeResponse getShareResult(String uuid)
