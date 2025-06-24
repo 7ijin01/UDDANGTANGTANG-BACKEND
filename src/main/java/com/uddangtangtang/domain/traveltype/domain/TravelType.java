@@ -28,8 +28,9 @@ public class TravelType
 
     private String image;
 
-    @OneToMany(mappedBy = "travelType", fetch = FetchType.LAZY)
-    private List<TourSpot> tourSpots = new ArrayList<>();
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String travelScheduleJson;
 
 
 }
