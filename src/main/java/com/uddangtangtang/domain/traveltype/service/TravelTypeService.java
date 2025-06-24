@@ -88,7 +88,7 @@ public class TravelTypeService
     @PostConstruct//@Scheduled 이거랑 같이 못 씀 분리해야 제대로 동작합
     public void init() {
         updateCachedCount();
-        updateTripRecommendation();
+        //updateTripRecommendation();
     }
     public Long getTestCount()
     {
