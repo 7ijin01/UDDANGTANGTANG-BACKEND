@@ -42,6 +42,7 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
     public ResponseEntity<ApiResponse<Compatibility4CutShareResponse>> get4CutShare(
             @PathVariable("id") String shareId) {
 
+
         Compatibility4CutShareResponse dto = compatibilityService.get4CutShare(shareId);
         return ResponseEntity.ok(
                 ApiResponse.onSuccess(SuccessStatus._OK, dto)
