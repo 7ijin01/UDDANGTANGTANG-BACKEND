@@ -168,4 +168,5 @@ public class TravelCompatibilityController implements TravelCompatibilityControl
 //            compatibilityTripRecommendRepository.save(recommend);
 //        }
 //    }
+
 }
