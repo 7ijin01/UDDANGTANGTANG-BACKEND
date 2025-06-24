@@ -210,7 +210,7 @@ public class TravelCompatibilityService {
 
         try {
             JsonNode node = objectMapper.readTree(compatibilityTestResult.getResponseJson());
-            return parseJsonWithFixedUUID(node, id, travelTypeA.getImage(), travelTypeB.getImage());
+            return parseJsonWithFixedUUID(node, id, travelTypeA.getImage(), travelTypeB.getImage(),travelTypeA.getTypeName(),travelTypeB.getTypeName());
         } catch (Exception e) {
             log.error("Failed to parse responseJson for share result", e);
             throw new GeneralException(ErrorStatus.AI_PARSE_ERROR);
