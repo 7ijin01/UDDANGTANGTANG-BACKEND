@@ -21,6 +21,7 @@ import com.uddangtangtang.global.ai.service.AiService;
 import com.uddangtangtang.global.apiPayload.code.status.ErrorStatus;
 import com.uddangtangtang.global.apiPayload.exception.GeneralException;
 import com.uddangtangtang.global.util.AiCompatibilityPromptBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -47,8 +48,10 @@ public class TravelCompatibilityService {
 
 
 //    @Transactional
-    public CompatibilityResponse computeCompatibility(CompatibilityRequest request)  {
 
+    @Cacheable(value = "compatibility", key = "#request.myType() + '_' + #request.otherType()")
+    public CompatibilityResponse computeCompatibility(CompatibilityRequest request)  {
+        log.info("🧠 캐시 미스 - AI 호출 실행: {} vs {}", request.myType(), request.otherType());
         String t1 = request.myType() == null || request.myType().isBlank() ? "?" : request.myType();
         String t2 = request.otherType();
         String typeA = t1.compareTo(t2) <= 0 ? t1 : t2;
