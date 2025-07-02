@@ -11,7 +11,7 @@ public record TypeResponse(
         String image,
         String description,
         String typeName,
-        List<String>recommendations,
+        TravelScheduleResponse recommendation,
         String shareId
 
 ) {

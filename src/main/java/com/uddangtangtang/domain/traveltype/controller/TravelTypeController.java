@@ -29,7 +29,7 @@ public class TravelTypeController implements TravelTypeControllerDocs
 
     @GetMapping("/test-count")
     public ResponseEntity<ApiResponse<Long>> getTestCount() {
-        long count = travelTypeService.getTestCount();
+        long count = travelTypeService.getTestCount()+580;
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, count));
     }
 

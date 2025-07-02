@@ -23,13 +23,15 @@ public class TravelType
     @Column(name = "type_name")
     private String typeName;// 해당 유형 이름
 
-    @Column(name = "type_description")
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String typeDescription;//해당 유형 설명
 
     private String image;
 
-    @OneToMany(mappedBy = "travelType", fetch = FetchType.LAZY)
-    private List<TourSpot> tourSpots = new ArrayList<>();
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String travelScheduleJson;
 
 
 }
