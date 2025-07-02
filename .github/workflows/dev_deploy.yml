@@ -6,6 +6,7 @@ on:
       - develop
       - release/*
 
+
 jobs:
   build:
     if: github.ref == 'refs/heads/develop'
