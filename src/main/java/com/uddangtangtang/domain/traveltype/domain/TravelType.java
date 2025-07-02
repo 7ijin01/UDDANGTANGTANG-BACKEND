@@ -24,6 +24,7 @@ public class TravelType
     private String typeName;// 해당 유형 이름
 
     @Column(name = "type_description")
+    @Lob
     private String typeDescription;//해당 유형 설명
 
     private String image;
