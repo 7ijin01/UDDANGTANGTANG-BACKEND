@@ -67,23 +67,85 @@ src/main/java/com/uddangtangtang/
 ├── domain/
 │   ├── compatibility/
 │   │   ├── controller/
+│   │   │   └── TravelCompatibilityController.java
 │   │   ├── domain/
+│   │   │   ├── Compatibility.java
+│   │   │   ├── CompatibilityTestResult.java
+│   │   │   └── CompatibilityTripRecommend.java
 │   │   ├── dto/
+│   │   │   ├── request/
+│   │   │   │   └── CompatibilityRequest.java
+│   │   │   └── response/
+│   │   │       ├── Compatibility4CutShareResponse.java
+│   │   │       ├── CompatibilityResponse.java
+│   │   │       └── CompatibilityShareResponse.java
 │   │   ├── repository/
+│   │   │   ├── CompatibilityRepository.java
+│   │   │   ├── CompatibilityResultRepository.java
+│   │   │   └── CompatibilityTripRecommendRepository.java
 │   │   ├── service/
+│   │   │   ├── CompatibilityLoader.java
+│   │   │   └── TravelCompatibilityService.java
 │   │   └── util/
+│   │       └── CompatibilityUtil.java
 │   └── traveltype/
 │       ├── controller/
+│       │   └── TravelTypeController.java
 │       ├── domain/
+│       │   ├── TourSpot.java
+│       │   ├── TravelType.java
+│       │   ├── TravelTypeTestLog.java
+│       │   └── TravelTypeTestResult.java
 │       ├── dto/
+│       │   ├── request/
+│       │   │   └── TypeRequest.java
+│       │   └── response/
+│       │       ├── DaySchedule.java
+│       │       ├── TravelScheduleResponse.java
+│       │       └── TypeResponse.java
 │       ├── repository/
+│       │   ├── TourSpotRepository.java
+│       │   ├── TravelTypeRepository.java
+│       │   ├── TravelTypeTestLogRepository.java
+│       │   ├── TravelTypeTestResultRepository.java
+│       │   └── custom/
+│       │       ├── CustomTravelTypeRepository.java
+│       │       └── CustomTravelTypeRepositoryImpl.java
 │       └── service/
+│           └── TravelTypeService.java
 └── global/
     ├── ai/
+    │   ├── dto/
+    │   │   └── response/
+    │   │       └── ChatGptResponse.java
+    │   └── service/
+    │       └── AiService.java
     ├── apiPayload/
+    │   ├── ApiResponse.java
+    │   ├── code/
+    │   │   ├── BaseCode.java
+    │   │   ├── BaseErrorCode.java
+    │   │   ├── ErrorReasonDTO.java
+    │   │   ├── ReasonDTO.java
+    │   │   └── status/
+    │   │       ├── ErrorStatus.java
+    │   │       └── SuccessStatus.java
+    │   └── exception/
+    │       ├── ExceptionAdvice.java
+    │       └── GeneralException.java
     ├── config/
+    │   ├── JacksonConfig.java
+    │   ├── SecurityConfig.java
+    │   ├── SwaggerConfig.java
+    │   └── WebClientConfig.java
     ├── controller/
+    │   └── WebForwardingController.java
     └── util/
+        ├── AiCompatibilityPromptBuilder.java
+        ├── AiCompatibilitylRecommendPromptBuilder.java
+        ├── AiTravelTypeRecommendPromptBuilder.java
+        ├── AiTypePromptBuilder.java
+        └── AiTypeReasonPromptBuilder.java
 ```
 
 ---
