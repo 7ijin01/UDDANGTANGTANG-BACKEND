@@ -1,4 +1,5 @@
-<img width="1109" height="624" alt="스크린샷 2025-07-13 11 20 47" src="https://github.com/user-attachments/assets/de2b95d2-69f2-4c6c-94a2-a34a2d1d0608" />
+<img width="1451" height="819" alt="스크린샷 2025-07-13 11 35 02" src="https://github.com/user-attachments/assets/d7d75790-ea03-46c4-8c13-df5b16830f20" />
+
 
 # 🧳 우당탕탕 여행 궁합 (UDDANGTANGTANG Compatibility)
 
