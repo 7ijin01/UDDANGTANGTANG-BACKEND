@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
@@ -42,8 +43,7 @@ public interface TravelTypeControllerDocs
                     )
             )
     })
-    ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<TypeResponse>> requestTravelTypeTest(@RequestBody TypeRequest typeRequest);
-
+    Mono<ResponseEntity<com.uddangtangtang.global.apiPayload.ApiResponse<TypeResponse>>> requestTravelTypeTest(@RequestBody TypeRequest typeRequest);
     @Operation(summary = "여행 유형 테스트 횟수")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "테스트 횟수 반환 성공"),

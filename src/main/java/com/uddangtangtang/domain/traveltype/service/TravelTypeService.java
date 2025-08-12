@@ -42,7 +42,7 @@ public class TravelTypeService
 
     private Long cachedCount = 0L;
 
-    public TypeResponse generateTravelType(TypeRequest request) {
+    public Mono<TypeResponse> generateTravelType(TypeRequest request) {
         String rawAnswer = request.answer();
         String code = calculateTypeCode(rawAnswer);
         String uuid = UUID.randomUUID().toString();
@@ -73,8 +73,7 @@ public class TravelTypeService
                     return new TypeResponse(
                             code, reason, image, description, name, schedule, uuid
                     );
-                })
-                .block(); // 최종 조합된 결과 기다림
+                });
     }
 
 
